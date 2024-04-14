@@ -1,7 +1,11 @@
+
 import flatpickr from "flatpickr"
 import "flatpickr/dist/flatpickr.min.css"
-
 // console.log(flatpickr);
+
+import iziToast from "izitoast";
+import "izitoast/dist/css/iziToast.min.css";
+// console.log(iziToast);
 
 const dateTimePicker = document.querySelector('#datetime-picker');
 const btnStart = document.querySelector('button[data-start]');
@@ -23,7 +27,15 @@ const options = {
         // удаляю атт disable  и тогда присваиваю в переменную значение выбранной даты в млсек
         if (selectedDates[0] <= options.defaultDate) {
             btnStart.setAttribute('disabled', 'disabled');
-            alert("Please choose a date in the future");
+            // alert("Please choose a date in the future");
+             iziToast.show({
+        title: 'Error',
+        message: 'Please choose a date in the future!',
+        position: 'topRight',
+        backgroundColor: '#ef4040',
+        messageColor: '#fff',
+        titleColor: '#fff',
+      });
         } else {
             btnStart.removeAttribute('disabled');
 
@@ -49,33 +61,34 @@ function handlerStart() {
     if (!userSelectedDate) {
         return;
     };
+    
+    const timerId = setInterval(updateTimer, 1000);
+    updateTimer();
 
-    const timeForTimer = userSelectedDate - new Date();
+    function updateTimer() {
+        const timeForTimer = userSelectedDate - new Date();
 
-    const timerId = setInterval(() => {
-        // Мне нужно время текущее и время выбранное, их разницу
+         if (timeForTimer <= 0) {
+             clearInterval(timerId);
+             btnStart.removeAttribute('disabled');
+             input.removeAttribute('disabled');
+
+            return;
+        };
+
         const { days, hours, minutes, seconds } = convertMs(timeForTimer);
 
-        const convertTime = {
-            days: days,
-            hours: hours,
-            minutes: minutes,
-            seconds: seconds,
-        };
-        
-        display.day.textContent = addLeadingZero(convertTime.days);
-        display.hours.textContent = addLeadingZero(convertTime.hours);
-        display.minutes.textContent = addLeadingZero(convertTime.minutes);
-        display.seconds.textContent = addLeadingZero(convertTime.seconds);
+        display.day.textContent = addLeadingZero(days);
+        display.hours.textContent = addLeadingZero(hours);
+        display.minutes.textContent = addLeadingZero(minutes);
+        display.seconds.textContent = addLeadingZero(seconds);
 
-        // Деактивировать кнопку и инпут
+         // Деактивировать кнопку и инпут
         btnStart.setAttribute('disabled', 'disabled');
         input.setAttribute('disabled', 'disabled');
-
-    }, 1000);
+    };
     
 };
-
 
 function convertMs(ms) {
   // Number of milliseconds per unit of time
@@ -84,13 +97,9 @@ function convertMs(ms) {
   const hour = minute * 60;
   const day = hour * 24;
 
-  // Remaining days
   const days = Math.floor(ms / day);
-  // Remaining hours
   const hours = Math.floor((ms % day) / hour);
-  // Remaining minutes
   const minutes = Math.floor(((ms % day) % hour) / minute);
-  // Remaining seconds
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
@@ -100,4 +109,3 @@ function convertMs(ms) {
 function addLeadingZero(value) {
     return value.toString().padStart(2, '0');
 };
-
