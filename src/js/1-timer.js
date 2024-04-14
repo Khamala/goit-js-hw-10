@@ -70,9 +70,6 @@ function handlerStart() {
 
          if (timeForTimer <= 0) {
              clearInterval(timerId);
-             btnStart.removeAttribute('disabled');
-             input.removeAttribute('disabled');
-
             return;
         };
 
